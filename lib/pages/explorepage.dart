@@ -232,11 +232,52 @@ class _ExplorePageState extends State<ExplorePage> {
                                                     child: Row(
                                                       mainAxisAlignment: MainAxisAlignment.end,
                                                       children: [
-                                                        FloatingActionButton(
-                                                          heroTag: index,
-                                                          onPressed: () => savedArticlesBloc.add(SavedArticlesEvent.saveArticle(article: article)),
-                                                          backgroundColor: Colors.red,
-                                                          child: Icon(Icons.favorite_border),
+
+                                                        BlocBuilder<SavedArticlesBloc, SavedArticlesState>(
+                                                          cubit: savedArticlesBloc,
+                                                          builder: (context, state) {
+                                                            print(state);
+
+                                                            if(state is NoArticlesSaved) {
+                                                              return FloatingActionButton(
+                                                                heroTag: index,
+                                                                onPressed: () => savedArticlesBloc.add(SavedArticlesEvent.saveArticle(article: article)),
+                                                                backgroundColor: Colors.red,
+                                                                child: Icon(Icons.favorite_border),
+                                                              );
+                                                            }
+
+                                                            if(state is ArticlesFetched) {
+                                                              bool exists = false;
+
+                                                              for(var i=0; i<state.articles.length; i++) {
+                                                                // you may have to check the equality operator
+                                                                if(article.url == state.articles[i].url) {
+                                                                  exists=true;
+                                                                  break;
+                                                                }
+                                                              }
+
+                                                              if(exists){
+                                                                // saved already
+                                                              } else {
+                                                                return FloatingActionButton(
+                                                                  heroTag: index,
+                                                                  onPressed: () => savedArticlesBloc.add(SavedArticlesEvent.saveArticle(article: article)),
+                                                                  backgroundColor: Colors.red,
+                                                                  child: Icon(Icons.favorite_border),
+                                                                );
+                                                              }
+
+
+
+                                                            }
+
+                                                            return Container(
+                                                              height: 0.0,
+                                                              width: 0.0,
+                                                            );
+                                                          },
                                                         ),
                                                       ],
                                                     ),
