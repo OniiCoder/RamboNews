@@ -1,15 +1,23 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
+import 'package:rambo_news/bloc/savedarticlesbloc/SavedArticlesBloc.dart';
+import 'package:rambo_news/bloc/savedarticlesbloc/SavedArticlesEvent.dart';
+import 'package:rambo_news/bloc/savedarticlesbloc/SavedArticlesState.dart';
 import 'package:rambo_news/main.dart';
 import 'package:rambo_news/model/newsArticle.dart';
+import 'package:rambo_news/pages/SavedArticlesPage.dart';
 import 'package:rambo_news/pages/articleDetailsPage.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:badges/badges.dart';
 
 const lightGreen = Color(0xff4CAF50);
 const darkGreen = Color(0xff388E3C);
 const yellowColor = Color(0xffFFEB3B);
+const blueColor = Color(0xff304FFF);
+const greyColor = Color(0xffF8F8F8);
 
 Future fetchBitcoinUpdates() async {
   final response =
@@ -43,8 +51,11 @@ class _NigerianNewsState extends State<NigerianNews> {
 
   Future newsArticless;
 
+  SavedArticlesBloc savedArticlesBloc;
+
   @override
   void initState() {
+    savedArticlesBloc = BlocProvider.of<SavedArticlesBloc>(context);
     super.initState();
     newsArticless = fetchBitcoinUpdates();
 
@@ -62,14 +73,10 @@ class _NigerianNewsState extends State<NigerianNews> {
 
   Image ImageHere({String url}) {
 
-//    url != null ? Image.network(url) : Image.asset('images/breakingnews.jpg');
-
   if (url != null) {
     return Image.network(url);
   }
-
   return Image.asset('images/breakingnews.jpg');
-
   }
 
 
@@ -77,13 +84,48 @@ class _NigerianNewsState extends State<NigerianNews> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Nigerian News',
-          style: TextStyle(
-            fontSize: 24,
-          ),
+        backgroundColor: Colors.grey[900],
+        title: Row(
+//          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Icon(Icons.library_books),
+            SizedBox(width: 5,),
+            Text(
+              'Nigerian News',
+              style: TextStyle(
+                fontSize: 20,
+              ),
+            ),
+          ],
         ),
-        centerTitle: true,
+        elevation: 0,
+        actions: [
+          FlatButton(
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SavedArticlesPage())),
+            child: Row(
+              children: [
+                Text('Saved', style: TextStyle(color: Colors.white),),
+                SizedBox(width: 3.0,),
+                Badge(
+                  badgeContent: BlocConsumer<SavedArticlesBloc, SavedArticlesState>(
+                    cubit: savedArticlesBloc,
+                    builder: (context, state) {
+                      if(state is ArticlesFetched) {
+                        return Text(state.articles.length.toString());
+                      }
+                      return Text(
+                          ''
+                      );
+                    },
+                    listener: (context, state){},
+                  ),
+
+                  child: Icon(Icons.favorite, color: Colors.white,),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       body: Container(
           padding: EdgeInsets.all(20),
@@ -99,44 +141,84 @@ class _NigerianNewsState extends State<NigerianNews> {
                   itemCount: snapshot.data.length,
                   itemBuilder: (context, index) {
                     NewsArticle article = snapshot.data[index];
-                    return InkWell(
-                      onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => ArticleDetailsPage(url: article.url, title: article.title,)));
-                    },
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          ImageHere(url: article.urlToImage),
-                          SizedBox(height: 11,),
-                          Text(
-                            calculateTimeAgo(article.publishedAt) + ' by ' + article.sourceName,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
+                    return Container(
+                      padding: EdgeInsets.only(bottom: 20.0),
+                      child: InkWell(
+                        onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => ArticleDetailsPage(url: article.url, title: article.title,)));
+                      },
+                        child: Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            Container(
+                              margin: EdgeInsets.only(bottom: 20),
+                              padding: EdgeInsets.all(22),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    flex: 8,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text(
+                                          article.title,
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        SizedBox(height: 30,),
+                                        Row(
+                                          children: <Widget>[
+                                            Expanded(
+                                              child: Text(
+                                                article.sourceName + ' | ' + calculateTimeAgo(article.publishedAt),
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 1,
+                                    child: Container(),
+                                  ),
+                                  Expanded(
+                                    flex: 4,
+                                    child: Container(
+                                      height: 100,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: blueColor,
+                                        borderRadius: BorderRadius.circular(6),
+                                        image: DecorationImage(
+                                          image: article.urlToImage == null ? AssetImage('images/breakingnews.jpg') : NetworkImage(article.urlToImage),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 4,),
-                          Text(
-                            article.title,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
+                            FloatingActionButton(
+                              heroTag: index,
+                              onPressed: () => savedArticlesBloc.add(SavedArticlesEvent.saveArticle(article: article)),
+                              backgroundColor: Colors.red,
+                              child: Icon(Icons.favorite_border),
                             ),
-                          ),
-//                      SizedBox(height: 12,),
-//                      Text(
-//                        article.description,
-//                        style: TextStyle(
-//                          color: Colors.white,
-//                          fontSize: 16,
-//                        ),
-//                      ),
-                          SizedBox(height: 24,),
-//                        Divider(color: Colors.white, indent: 50, endIndent: 20,),
-//                        SizedBox(height: 24,),
-                          // Widget to display the list of project
-                        ],
+                          ],
+                        ),
+
                       ),
                     );
                   },

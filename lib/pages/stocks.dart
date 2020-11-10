@@ -1,11 +1,17 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
+import 'package:rambo_news/bloc/savedarticlesbloc/SavedArticlesBloc.dart';
+import 'package:rambo_news/bloc/savedarticlesbloc/SavedArticlesEvent.dart';
+import 'package:rambo_news/bloc/savedarticlesbloc/SavedArticlesState.dart';
 import 'package:rambo_news/main.dart';
 import 'package:rambo_news/model/newsArticle.dart';
+import 'package:rambo_news/pages/SavedArticlesPage.dart';
 import 'package:rambo_news/pages/articleDetailsPage.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:badges/badges.dart';
 
 const lightGreen = Color(0xff4CAF50);
 const darkGreen = Color(0xff388E3C);
@@ -43,8 +49,11 @@ class _StockNewsState extends State<StockNews> {
 
   Future newsArticless;
 
+  SavedArticlesBloc savedArticlesBloc;
+
   @override
   void initState() {
+    savedArticlesBloc = BlocProvider.of<SavedArticlesBloc>(context);
     super.initState();
     newsArticless = fetchBitcoinUpdates();
 
@@ -60,15 +69,12 @@ class _StockNewsState extends State<StockNews> {
     return readableDate;
   }
 
-  Image ImageHere({String url}) {
-
-//    url != null ? Image.network(url) : Image.asset('images/breakingnews.jpg');
+  dynamic imageHere({String url}) {
 
     if (url != null) {
-      return Image.network(url);
+      return NetworkImage(url, scale: 1.0);
     }
-
-    return Image.asset('images/breakingnews.jpg');
+    return AssetImage('images/breakingnews.jpg',);
 
   }
 
@@ -77,12 +83,40 @@ class _StockNewsState extends State<StockNews> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.grey[900],
         title: Text(
           'Stock Market and News',
           style: TextStyle(
           fontSize: 24,
         ),),
         centerTitle: true,
+        actions: [
+          FlatButton(
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SavedArticlesPage())),
+            child: Row(
+              children: [
+                Text('Saved', style: TextStyle(color: Colors.white),),
+                SizedBox(width: 3.0,),
+                Badge(
+                  badgeContent: BlocConsumer<SavedArticlesBloc, SavedArticlesState>(
+                    cubit: savedArticlesBloc,
+                    builder: (context, state) {
+                      if(state is ArticlesFetched) {
+                        return Text(state.articles.length.toString());
+                      }
+                      return Text(
+                          ''
+                      );
+                    },
+                    listener: (context, state){},
+                  ),
+
+                  child: Icon(Icons.favorite, color: Colors.white,),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       body: Container(
           padding: EdgeInsets.all(20),
@@ -105,12 +139,53 @@ class _StockNewsState extends State<StockNews> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          ImageHere(url: article.urlToImage),
+                          Container(
+                            height: 250,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.grey,
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                CircularProgressIndicator(),
+                                Container(
+                                  height: 250,
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      image: DecorationImage(
+                                          image: imageHere(
+                                            url: article.urlToImage,
+                                          ),
+                                          fit: BoxFit.cover
+                                      )
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Container(
+                                        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+                                        child: FloatingActionButton(
+                                          heroTag: index,
+                                          onPressed: () => savedArticlesBloc.add(SavedArticlesEvent.saveArticle(article: article)),
+                                          backgroundColor: Colors.red,
+                                          child: Icon(Icons.favorite_border),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                           SizedBox(height: 11,),
                           Text(
                             calculateTimeAgo(article.publishedAt) + ' by ' + article.sourceName,
                             style: TextStyle(
-                              color: Colors.white,
+                              color: Colors.grey,
                               fontSize: 18,
                             ),
                           ),
@@ -118,22 +193,14 @@ class _StockNewsState extends State<StockNews> {
                           Text(
                             article.title,
                             style: TextStyle(
-                              color: Colors.white,
+                              color: Colors.black,
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-//                      SizedBox(height: 12,),
-//                      Text(
-//                        article.description,
-//                        style: TextStyle(
-//                          color: Colors.white,
-//                          fontSize: 16,
-//                        ),
-//                      ),
                           SizedBox(height: 24,),
-//                        Divider(color: Colors.white, indent: 50, endIndent: 20,),
-//                        SizedBox(height: 24,),
+                          Divider(color: Colors.grey, indent: 50, endIndent: 20,),
+                          SizedBox(height: 24,),
                           // Widget to display the list of project
                         ],
                       ),

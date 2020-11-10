@@ -1,11 +1,16 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
+import 'package:rambo_news/bloc/savedarticlesbloc/SavedArticlesBloc.dart';
+import 'package:rambo_news/bloc/savedarticlesbloc/SavedArticlesState.dart';
 import 'package:rambo_news/main.dart';
 import 'package:rambo_news/model/newsArticle.dart';
+import 'package:rambo_news/pages/SavedArticlesPage.dart';
 import 'package:rambo_news/pages/articleDetailsPage.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:badges/badges.dart';
 
 const lightGreen = Color(0xff4CAF50);
 const darkGreen = Color(0xff388E3C);
@@ -64,12 +69,40 @@ class _BitcoinNewsState extends State<BitcoinNews> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.grey[900],
         title: Text(
           'Bitcoin Updates',
           style: TextStyle(
           fontSize: 24,
         ),),
         centerTitle: true,
+        actions: [
+          FlatButton(
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SavedArticlesPage())),
+            child: Row(
+              children: [
+                Text('Saved', style: TextStyle(color: Colors.white),),
+                SizedBox(width: 3.0,),
+                Badge(
+                  badgeContent: BlocConsumer<SavedArticlesBloc, SavedArticlesState>(
+                    // cubit: _savedArticlesBloc,
+                    builder: (context, state) {
+                      if(state is ArticlesFetched) {
+                        return Text(state.articles.length.toString());
+                      }
+                      return Text(
+                          ''
+                      );
+                    },
+                    listener: (context, state){},
+                  ),
+
+                  child: Icon(Icons.favorite, color: Colors.white,),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       body: Container(
         padding: EdgeInsets.all(20),
@@ -95,7 +128,7 @@ class _BitcoinNewsState extends State<BitcoinNews> {
                         Text(
                           calculateTimeAgo(article.publishedAt) + ' by ' + article.sourceName,
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Colors.grey,
                             fontSize: 18,
                           ),
                         ),
@@ -103,7 +136,7 @@ class _BitcoinNewsState extends State<BitcoinNews> {
                         Text(
                           article.title,
                           style: TextStyle(
-                            color: Colors.white,
+                            color: Colors.black,
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
@@ -117,7 +150,7 @@ class _BitcoinNewsState extends State<BitcoinNews> {
 //                        ),
 //                      ),
                         SizedBox(height: 24,),
-                        Divider(color: Colors.white, indent: 50, endIndent: 20,),
+                        Divider(color: Colors.grey[400], indent: 50, endIndent: 20,),
                         SizedBox(height: 24,),
                         // Widget to display the list of project
                       ],
