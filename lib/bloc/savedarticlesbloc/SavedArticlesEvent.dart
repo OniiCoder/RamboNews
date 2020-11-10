@@ -12,5 +12,8 @@ enum _SavedArticlesEvent {
   FetchSavedArticles,
 
   @object
-  ClearArticles
+  ClearArticles,
+
+  @Data(fields: [DataField<NewsArticle>('article')])
+  DeleteOneArticle
 }

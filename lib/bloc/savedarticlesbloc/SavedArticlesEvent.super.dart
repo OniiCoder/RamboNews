@@ -18,6 +18,9 @@ abstract class SavedArticlesEvent extends Equatable {
 
   factory SavedArticlesEvent.clearArticles() = ClearArticles.create;
 
+  factory SavedArticlesEvent.deleteOneArticle({@required NewsArticle article}) =
+      DeleteOneArticle.create;
+
   final _SavedArticlesEvent _type;
 
   /// The [when] method is the equivalent to pattern matching.
@@ -25,11 +28,13 @@ abstract class SavedArticlesEvent extends Equatable {
   R when<R extends Object>(
       {@required R Function(SaveArticle) saveArticle,
       @required R Function() fetchSavedArticles,
-      @required R Function() clearArticles}) {
+      @required R Function() clearArticles,
+      @required R Function(DeleteOneArticle) deleteOneArticle}) {
     assert(() {
       if (saveArticle == null ||
           fetchSavedArticles == null ||
-          clearArticles == null) {
+          clearArticles == null ||
+          deleteOneArticle == null) {
         throw 'check for all possible cases';
       }
       return true;
@@ -41,6 +46,8 @@ abstract class SavedArticlesEvent extends Equatable {
         return fetchSavedArticles();
       case _SavedArticlesEvent.ClearArticles:
         return clearArticles();
+      case _SavedArticlesEvent.DeleteOneArticle:
+        return deleteOneArticle(this as DeleteOneArticle);
     }
   }
 
@@ -53,6 +60,7 @@ abstract class SavedArticlesEvent extends Equatable {
       {R Function(SaveArticle) saveArticle,
       R Function() fetchSavedArticles,
       R Function() clearArticles,
+      R Function(DeleteOneArticle) deleteOneArticle,
       @required R Function(SavedArticlesEvent) orElse}) {
     assert(() {
       if (orElse == null) {
@@ -70,6 +78,9 @@ abstract class SavedArticlesEvent extends Equatable {
       case _SavedArticlesEvent.ClearArticles:
         if (clearArticles == null) break;
         return clearArticles();
+      case _SavedArticlesEvent.DeleteOneArticle:
+        if (deleteOneArticle == null) break;
+        return deleteOneArticle(this as DeleteOneArticle);
     }
     return orElse(this);
   }
@@ -79,11 +90,13 @@ abstract class SavedArticlesEvent extends Equatable {
   void whenPartial(
       {void Function(SaveArticle) saveArticle,
       void Function() fetchSavedArticles,
-      void Function() clearArticles}) {
+      void Function() clearArticles,
+      void Function(DeleteOneArticle) deleteOneArticle}) {
     assert(() {
       if (saveArticle == null &&
           fetchSavedArticles == null &&
-          clearArticles == null) {
+          clearArticles == null &&
+          deleteOneArticle == null) {
         throw 'provide at least one branch';
       }
       return true;
@@ -98,6 +111,9 @@ abstract class SavedArticlesEvent extends Equatable {
       case _SavedArticlesEvent.ClearArticles:
         if (clearArticles == null) break;
         return clearArticles();
+      case _SavedArticlesEvent.DeleteOneArticle:
+        if (deleteOneArticle == null) break;
+        return deleteOneArticle(this as DeleteOneArticle);
     }
   }
 
@@ -165,4 +181,38 @@ class _ClearArticlesImpl extends ClearArticles {
 
   @override
   String toString() => 'ClearArticles()';
+}
+
+@immutable
+abstract class DeleteOneArticle extends SavedArticlesEvent {
+  const DeleteOneArticle({@required this.article})
+      : super(_SavedArticlesEvent.DeleteOneArticle);
+
+  factory DeleteOneArticle.create({@required NewsArticle article}) =
+      _DeleteOneArticleImpl;
+
+  final NewsArticle article;
+
+  /// Creates a copy of this DeleteOneArticle but with the given fields
+  /// replaced with the new values.
+  DeleteOneArticle copyWith({NewsArticle article});
+}
+
+@immutable
+class _DeleteOneArticleImpl extends DeleteOneArticle {
+  const _DeleteOneArticleImpl({@required this.article})
+      : super(article: article);
+
+  @override
+  final NewsArticle article;
+
+  @override
+  _DeleteOneArticleImpl copyWith({Object article = superEnum}) =>
+      _DeleteOneArticleImpl(
+        article: article == superEnum ? this.article : article as NewsArticle,
+      );
+  @override
+  String toString() => 'DeleteOneArticle(article: ${this.article})';
+  @override
+  List<Object> get props => [article];
 }

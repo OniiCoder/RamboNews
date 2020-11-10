@@ -23,8 +23,6 @@ Future fetchBitcoinUpdates() async {
 
   if (response.statusCode == 200) {
 
-    print('got here');
-
     var tagObjsJson = jsonDecode(response.body)['articles'] as List;
 
     List<NewsArticle> NewsArticleList = tagObjsJson.map(
@@ -236,20 +234,19 @@ class _ExplorePageState extends State<ExplorePage> {
                                                         BlocBuilder<SavedArticlesBloc, SavedArticlesState>(
                                                           cubit: savedArticlesBloc,
                                                           builder: (context, state) {
-                                                            print(state);
 
                                                             if(state is NoArticlesSaved) {
                                                               return FloatingActionButton(
                                                                 heroTag: index,
                                                                 onPressed: () => savedArticlesBloc.add(SavedArticlesEvent.saveArticle(article: article)),
-                                                                backgroundColor: Colors.red,
+                                                                backgroundColor: Colors.green,
                                                                 child: Icon(Icons.favorite_border),
                                                               );
                                                             }
 
                                                             if(state is ArticlesFetched) {
                                                               bool exists = false;
-
+                                                              // loop to check if the article has already been saved
                                                               for(var i=0; i<state.articles.length; i++) {
                                                                 // you may have to check the equality operator
                                                                 if(article.url == state.articles[i].url) {
@@ -259,18 +256,21 @@ class _ExplorePageState extends State<ExplorePage> {
                                                               }
 
                                                               if(exists){
-                                                                // saved already
+                                                                // saved already, do nothing
+                                                                return FloatingActionButton(
+                                                                  heroTag: index,
+                                                                  onPressed: () => savedArticlesBloc.add(SavedArticlesEvent.deleteOneArticle(article: article)),
+                                                                  backgroundColor: Colors.red,
+                                                                  child: Icon(Icons.restore_from_trash),
+                                                                );
                                                               } else {
                                                                 return FloatingActionButton(
                                                                   heroTag: index,
                                                                   onPressed: () => savedArticlesBloc.add(SavedArticlesEvent.saveArticle(article: article)),
-                                                                  backgroundColor: Colors.red,
+                                                                  backgroundColor: Colors.green,
                                                                   child: Icon(Icons.favorite_border),
                                                                 );
                                                               }
-
-
-
                                                             }
 
                                                             return Container(

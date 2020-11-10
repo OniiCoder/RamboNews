@@ -19,4 +19,16 @@ class NewsRepo {
 
     return articles;
   }
+
+  List<NewsArticle> deleteArticle(NewsArticle newsArticle) {
+
+    for(var i=0; i<articles.length; i++) {
+      if(newsArticle.url == articles[i].url) {
+        articles.removeAt(i);
+        break;
+      }
+    }
+
+    return articles;
+  }
 }

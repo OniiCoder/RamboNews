@@ -75,7 +75,6 @@ class _SavedArticlesPageState extends State<SavedArticlesPage> {
 
               if(state is ArticlesFetched) {
                 List<NewsArticle> reversedList = List.from(state.articles.reversed);
-                print(reversedList[0]);
 
                 return ListView.builder(
                   itemCount: reversedList.length,
@@ -105,7 +104,7 @@ class _SavedArticlesPageState extends State<SavedArticlesPage> {
                           ),
                      SizedBox(height: 12,),
                      Text(
-                       reversedList[index].description,
+                       reversedList[index].description ?? '',
                        style: TextStyle(
                          color: Colors.grey[700],
                          fontSize: 14,

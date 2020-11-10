@@ -11,8 +11,7 @@ class SavedArticlesBloc extends Bloc<SavedArticlesEvent, SavedArticlesState> {
 
   @override
   Stream<SavedArticlesState> mapEventToState(SavedArticlesEvent event) async* {
-    // yield* event.when(saveArticle: (data) => mapToSaveArticle(data.article), fetchSavedArticles: () => mapToFetchSavedArticles());
-    yield* event.when(saveArticle: (data) => mapToSaveArticle(data.article), fetchSavedArticles: () => mapToFetchSavedArticles(), clearArticles: () => mapToClearArticles());
+    yield* event.when(saveArticle: (data) => mapToSaveArticle(data.article), fetchSavedArticles: () => mapToFetchSavedArticles(), clearArticles: () => mapToClearArticles(), deleteOneArticle: (data) => mapToDeleteOneArticle(data.article));
   }
 
   Stream<SavedArticlesState> mapToSaveArticle(NewsArticle article) async*{
@@ -24,8 +23,6 @@ class SavedArticlesBloc extends Bloc<SavedArticlesEvent, SavedArticlesState> {
     } else {
       yield SavedArticlesState.noArticlesSaved();
     }
-
-
   }
 
   Stream<SavedArticlesState> mapToFetchSavedArticles() async*{
@@ -41,6 +38,16 @@ class SavedArticlesBloc extends Bloc<SavedArticlesEvent, SavedArticlesState> {
   Stream<SavedArticlesState> mapToClearArticles() async*{
     yield SavedArticlesState.fetchingArticle();
     List<NewsArticle> articles = newsRepo.clearArticles();
+    if(articles.length > 0) {
+      yield SavedArticlesState.articlesFetched(articles: articles);
+    } else {
+      yield SavedArticlesState.noArticlesSaved();
+    }
+  }
+
+  Stream<SavedArticlesState> mapToDeleteOneArticle(NewsArticle article) async* {
+    yield SavedArticlesState.fetchingArticle();
+    List<NewsArticle> articles = newsRepo.deleteArticle(article);
     if(articles.length > 0) {
       yield SavedArticlesState.articlesFetched(articles: articles);
     } else {
