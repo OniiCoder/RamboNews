@@ -2,7 +2,10 @@
 import 'package:rambo_news/model/newsArticle.dart';
 
 class NewsRepo {
-  List<NewsArticle> articles = [];
+  List<NewsArticle> articles;
+  NewsRepo() {
+    this.articles = [];
+  }
 
   List<NewsArticle> fetchArticles() {
     return articles;
