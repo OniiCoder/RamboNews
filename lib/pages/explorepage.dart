@@ -51,7 +51,6 @@ class _ExplorePageState extends State<ExplorePage> {
 
   @override
   void initState() {
-    // _savedArticlesBloc = SavedArticlesBloc();
     savedArticlesBloc = context.read<SavedArticlesBloc>();
 
     newsArticless = fetchBitcoinUpdates();
